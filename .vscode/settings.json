@@ -1,0 +1,87 @@
+{
+  // ===============================================
+  // Generic settings
+  // ===============================================
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.fontSize": 12,
+  "editor.fontFamily": "Menlo, Monaco, 'Courier New', monospace",
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.colorTheme": "Atom One Dark",
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter-notebook"
+  },
+  "vsicons.dontShowNewVersionMessage": true,
+  // ===============================================
+  // Python settings
+  // ===============================================
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length=99"],
+  "python.sortImports.args": ["--profile", "black"],
+  "python.linting.enabled": false,
+  "python.linting.flake8Enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.languageServer": "Pylance",
+  "python.analysis.typeCheckingMode": "off",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportUnusedImport": "none", // error
+  },
+  "[python]": {
+    "editor.formatOnType": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.terminal.executeInFileDir": false,
+  "python.terminal.launchArgs": [
+    "-c",
+    "import os; os.chdir('/path/to/project/root')"
+  ],
+  "python.pythonPath": "/path/to/python/interpreter",
+  "python.envFile": "${workspaceFolder}/.env",
+  "notebook.output.wordWrap": true,
+  "notebook.output.textLineLimit": 50,
+  "notebook.cellToolbarLocation": {
+    "default": "right",
+    "jupyter-notebook": "left"
+  },
+  "jupyter.askForKernelRestart": false,
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+  // ===============================================
+  // Misc settings
+  // ===============================================
+  "terminal.integrated.shellIntegration.suggestEnabled": true,
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.inheritEnv": false,
+  "security.workspace.trust.untrustedFiles": "open",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "liveServer.settings.donotVerifyTags": true,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "yaml.schemas": {
+    "kubernetes": "*.yaml"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // ===============================================
+  // Julia settings
+  // ===============================================
+  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+  "julia.symbolCacheDownload": true,
+  "julia.enableTelemetry": false,
+}

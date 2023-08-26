@@ -1,0 +1,36 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+  - repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+      - id: black
+      - id: black-jupyter
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v2.0.2
+    hooks:
+      - id: autopep8
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 6.13.0
+    hooks:
+      - id: pip-compile
+  # - repo: https://github.com/pycqa/flake8
+  #   rev: 4.0.1
+  #   hooks:
+  #     - id: flake8
+  #       additional_dependencies:
+  #         - flake8-bugbear
+  #         - flake8-comprehensions
+  #         - flake8-simplify
+  #       types: [python]
+  #       files: ^(?!\.venv|venv|env|migration).*\.py$
+  #       args: [--extend-ignore=B950]

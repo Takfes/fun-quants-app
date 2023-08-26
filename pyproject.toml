@@ -1,0 +1,26 @@
+[settings]
+line_length = 88
+multi_line_output = 3
+known_third_party = ["celery", "django", "environ", "pyquery", "pytz", "redis", "requests", "rest_framework"]
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
