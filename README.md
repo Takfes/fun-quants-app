@@ -4,6 +4,7 @@
 
 - [Stock Exchanges of the World](https://en.wikipedia.org/wiki/List_of_stock_exchanges)
 - [Athens Stock Exchange Symbols](https://finance.yahoo.com/screener/unsaved/c1da39e2-6cde-497b-a92d-93939eddb9ee?count=150)
+- [Python Package with Tickers](https://pypi.org/project/pytickersymbols/)
 
 ## MATHS
 

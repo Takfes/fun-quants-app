@@ -20,6 +20,8 @@ ticker_d = ["RIO", "MO", "JPM", "MCD", "HD"]
 # Download data
 df_a = yf.download(ticker_a, period="max")
 
+df_a.xs("AAPL", level=1, axis=1).columns
+
 # turn data into long format keeping the ticker symbol as an extra column
 df_a_long = (
     df_a.stack(level=1).reset_index(level=1).rename(columns={"level_1": "ticker"})
@@ -66,7 +68,7 @@ xticks.get_info()
 # fetch detailed data per ticker
 # ===============================================
 # Define the ticker symbol
-ticker_symbol = "RIO"  # "AAPL"
+ticker_symbol = "AAPL"  # "AAPL"
 
 # Create the Ticker object
 stock = yf.Ticker(ticker_symbol)
@@ -75,7 +77,7 @@ stock = yf.Ticker(ticker_symbol)
 [x for x in dir(stock) if not x.startswith("_")]
 
 # get historical market data
-hd = stock.history(period="max")
+hd = stock.history(period="max", actions=True)
 
 # misc
 stock.financials

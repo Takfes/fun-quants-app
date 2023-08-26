@@ -6,79 +6,12 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
-import yfinance as yf
 from matplotlib import pyplot as plt
 from scipy.stats import kurtosis, norm, percentileofscore, skew
-from tqdm import tqdm
 
 
 def convert_date(x):
     return datetime.datetime.utcfromtimestamp(x).strftime("%Y-%m-%d")
-
-
-def get_tickers(filter: str = None):
-    temp = pd.read_excel("data/se_tickers.xlsx")
-    if filter is None:
-        return temp["ticker"].unique().tolist()
-    else:
-        plist = temp["provider"].unique().tolist()
-        if filter not in plist:
-            raise ValueError(f"Filter {filter} not found. Must be on of {plist}")
-        else:
-            return temp.loc[temp["provider"] == filter, "ticker"].unique().tolist()
-
-
-metrics = {
-    "trailingPE": "low_is_better",
-    "priceToBook": "low_is_better",
-    "priceToSalesTrailing12Months": "low_is_better",
-    "profitMargins": "high_is_better",
-    "returnOnEquity": "high_is_better",
-    "returnOnAssets": "high_is_better",
-    "currentRatio": "high_is_better",
-    "quickRatio": "high_is_better",
-    "debtToEquity": "low_is_better",
-    "earningsGrowth": "high_is_better",
-    "revenueGrowth": "high_is_better",
-    "dividendYield": "high_is_better",
-    "payoutRatio": "low_is_better",
-    "marketCap": "high_is_better",
-    "beta": "low_is_better",
-    "operatingMargins": "high_is_better",
-    "freeCashflow": "high_is_better",
-}
-
-
-def fetch_fundamentals(tickers):
-    fundamentals_ = []
-    for ticker_symbol in tqdm(tickers):
-        ticker = yf.Ticker(ticker_symbol)
-        info = ticker.get_info()
-        # Extract the relevant metrics
-        data = {}
-        for metric, preference in metrics.items():
-            data[f"{metric}_{preference}"] = info.get(metric, None)
-            data["ticker"] = ticker_symbol
-        # Append the data to the DataFrame
-        fundamentals_.append(data)
-        fundamentals_df = pd.DataFrame(fundamentals_).set_index("ticker")
-        # Fill missing values with the mean
-        fundamentals = fundamentals_df.fillna(fundamentals_df.mean())
-        # Rank the metrics
-        for column, preference in metrics.items():
-            col_name = f"{column}_{preference}"
-            if preference == "high_is_better":
-                fundamentals[f"{column}_rank"] = fundamentals[col_name].rank(
-                    ascending=False
-                )
-            else:
-                fundamentals[f"{column}_rank"] = fundamentals[col_name].rank(
-                    ascending=True
-                )
-        fundamentals["overall_score"] = fundamentals[
-            [f"{column}_rank" for column in metrics.keys()]
-        ].sum(axis=1)
-    return fundamentals.sort_values(by="overall_score")
 
 
 def find_below_threshold_missingness(
@@ -97,15 +30,6 @@ def rebalance_weights(weights: np.ndarray, threshold: float = 0.0001) -> np.ndar
     if total_weight < 0:
         weights = weights / total_weight
     return weights
-
-
-# def annual_risk_return(data: pd.DataFrame, risk_free_rate: float = 0.017) -> pd.DataFrame:
-#     summary = data.agg(["mean", "std"]).T
-#     summary.columns = ["Returns", "Risk"]
-#     summary.Returns = summary.Returns * 252
-#     summary.Risk = summary.Risk * np.sqrt(252)
-#     summary["Sharpe"] = (summary.Returns - risk_free_rate) / summary.Risk
-#     return summary
 
 
 def annual_risk_return(

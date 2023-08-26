@@ -74,6 +74,8 @@ distlib==0.3.7
     # via
     #   my-quants-app (setup.py)
     #   virtualenv
+duckdb==0.8.1
+    # via my-quants-app (setup.py)
 et-xmlfile==1.1.0
     # via
     #   my-quants-app (setup.py)
@@ -159,7 +161,12 @@ lxml==4.9.3
     # via
     #   my-quants-app (setup.py)
     #   newspaper3k
+    #   pandas-datareader
     #   yfinance
+markdown-it-py==3.0.0
+    # via
+    #   my-quants-app (setup.py)
+    #   rich
 matplotlib==3.7.2
     # via
     #   my-quants-app (setup.py)
@@ -168,6 +175,10 @@ matplotlib-inline==0.1.6
     # via
     #   ipykernel
     #   ipython
+    #   my-quants-app (setup.py)
+mdurl==0.1.2
+    # via
+    #   markdown-it-py
     #   my-quants-app (setup.py)
 multitasking==0.0.11
     # via
@@ -212,8 +223,11 @@ packaging==23.1
 pandas==2.0.3
     # via
     #   my-quants-app (setup.py)
+    #   pandas-datareader
     #   seaborn
     #   yfinance
+pandas-datareader==0.10.0
+    # via my-quants-app (setup.py)
 parso==0.8.3
     # via
     #   jedi
@@ -267,6 +281,7 @@ pygments==2.16.1
     # via
     #   ipython
     #   my-quants-app (setup.py)
+    #   rich
 pyparsing==3.0.9
     # via
     #   matplotlib
@@ -278,6 +293,8 @@ python-dateutil==2.8.2
     #   my-quants-app (setup.py)
     #   newspaper3k
     #   pandas
+python-dotenv==1.0.0
+    # via my-quants-app (setup.py)
 pytz==2023.3
     # via
     #   my-quants-app (setup.py)
@@ -302,6 +319,7 @@ requests==2.31.0
     #   feedfinder2
     #   my-quants-app (setup.py)
     #   newspaper3k
+    #   pandas-datareader
     #   requests-file
     #   tldextract
     #   yfinance
@@ -309,6 +327,8 @@ requests-file==1.5.1
     # via
     #   my-quants-app (setup.py)
     #   tldextract
+rich==13.5.2
+    # via my-quants-app (setup.py)
 scipy==1.11.2
     # via my-quants-app (setup.py)
 seaborn==0.12.2

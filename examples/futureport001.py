@@ -4,7 +4,7 @@ import yfinance as yf
 from matplotlib import pyplot as plt
 
 from src.conf import *
-from src.utils import annual_risk_return, plot_assets_density
+from src.func import annual_risk_return, plot_assets_density
 
 tickers = ["MSFT", "NVDA", "AMZN", "CVX"]
 
