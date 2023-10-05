@@ -54,6 +54,20 @@ def annual_risk_return(
     return summary
 
 
+def rank_fundamentals(fundamentals):
+    pass
+    # for column, preference in metrics.items():
+    #     col_name = f"{column}_{preference}"
+    #     if preference == "high_is_better":
+    #         fundamentals[f"{column}_rank"] = fundamentals[col_name].rank(ascending=False)
+    #     else:
+    #         fundamentals[f"{column}_rank"] = fundamentals[col_name].rank(ascending=True)
+    # fundamentals["overall_score"] = fundamentals[
+    #     [f"{column}_rank" for column in metrics.keys()]
+    # ].sum(axis=1)
+    # return fundamentals.sort_values(by="overall_score")
+
+
 def plot_assets_density(df):
     # Number of assets
     n_assets = df.shape[1]

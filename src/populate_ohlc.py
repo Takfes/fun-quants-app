@@ -15,11 +15,11 @@ START = "2017-01-01"
 
 # Load environment variables from .env file
 load_dotenv()
-LOG_FILE_OHLC = os.getenv("LOG_FILE_OHLC")
+LOG_FILE = os.getenv("LOG_FILE_OHLC")
 
 # configure logging
 logger = configure_logging(
-    console_output=True, log_to_file=True, log_file_path=LOG_FILE_OHLC
+    console_output=True, log_to_file=True, log_file_path=LOG_FILE
 )
 
 # create timetag with YYYY-MM-DD format
@@ -34,7 +34,7 @@ print(f'Total number of tickers: {len(tickersdf["ticker"].unique())}')
 provider_list = ["ATHEX", "LSE", "NASDAQ", "NYSE"]  # 'BSE', 'SSE', 'TSE'
 
 # ===============================================
-# download data
+# download data historical data
 # ===============================================
 start = time.perf_counter()
 

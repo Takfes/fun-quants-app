@@ -1,3 +1,4 @@
+import pprint
 import time
 
 import numpy as np
@@ -10,11 +11,11 @@ from src.conf import RISK_FREE_RATE
 from src.func import (
     annual_risk_return,
     find_below_threshold_missingness,
-    get_tickers,
+    plot_assets_density,
     plot_portfolios,
     rebalance_weights,
 )
-from src.myio import get_tickers
+from src.myio import get_tickers, histdata_query, query_duckdb
 
 sns.set_style("darkgrid")
 
@@ -23,24 +24,56 @@ sns.set_style("darkgrid")
 # ===============================================
 
 RANDOM_SEED = 1990
-SIMULATION_REDUCED_UNIVERSE = True
+PULL_DATA_FROM_DATABASE = True
+SIMULATION_REDUCED_UNIVERSE = False
 SIMULATION_NUMBER_OF_PORTFOLIOS = 50_000
-START_DATE = "2022-01-01"
+START_DATE = "2021-01-01"
 END_DATE = "2023-07-31"
 THRESHOLD = 0.05
-TICKERS = get_tickers("ATHEX")
 
-# Download data
-rdata = yf.download(TICKERS, start=START_DATE, end=END_DATE, actions=True)
+# tickersdf = get_tickers()
+# TICKERS = tickersdf[tickersdf.provider == "ATHEX"].ticker.tolist()
+TICKERS = ["ELF", "CAAP", "CER.L", "MCK", "IPEL.L", "ARLP"]  # "XOM", "NVDA",
+# TICKERS = [
+#     "CVX",
+#     "RS",
+#     "CW",
+#     "MET",
+#     "FSK",
+#     "TAC",
+#     "ADI",
+#     "PPC",
+#     "UFPI",
+#     "COP",
+#     "MPC",
+#     "CMC",
+#     "HRB",
+# ]
 
-# fdata = fetch_fundamentals(TICKERS)
+print(f"{20*'='} PULL DATA {20*'='}")
+if PULL_DATA_FROM_DATABASE:
+    # Query Data from Database
+    formatted_query = histdata_query.format(
+        tickers=tuple(TICKERS), start_date=START_DATE, end_date=END_DATE
+    )
+    # pprint.pprint(formatted_query)
+    # Get data from database
+    dbdata = query_duckdb(formatted_query)
+    # pivot data to have dates as index and tickers as columns
+    data = dbdata.pivot(index="Date", columns="Ticker", values="AdjClose")
+else:
+    # Download data
+    rdata = yf.download(TICKERS, start=START_DATE, end=END_DATE, actions=True)
+    # Keep only the Adj Close column
+    data = rdata["Adj Close"].copy()
+
+# dbdata.sum() == data.sum()
+# dbdata.equals(data)
 
 # ===============================================
 # Clean data
 # ===============================================
 
-# Keep only the Adj Close column
-data = rdata["Adj Close"].copy()
 # observe data presence (opposite of missingness)
 round(1 - data.isnull().sum() / data.shape[0], 2).sort_values(ascending=True).head(10)
 # Track symbols with acceptable missingness
@@ -50,6 +83,24 @@ datac = data[non_missing].copy()
 # find returns and drop nas
 returns = datac.pct_change().dropna()
 # returns = np.log(datac / datac.shift(1)).dropna()
+# plot_assets_density(returns)
+
+# # create correlation heatmap
+# corr = returns.corr()
+# mask = np.triu(np.ones_like(corr, dtype=bool))
+# f, ax = plt.subplots(figsize=(11, 9))
+# cmap = sns.diverging_palette(230, 20, as_cmap=True)
+# sns.heatmap(
+#     corr,
+#     mask=mask,
+#     cmap=cmap,
+#     vmax=1,
+#     vmin=-1,
+#     center=0,
+#     square=True,
+#     linewidths=0.5,
+#     cbar_kws={"shrink": 0.5},
+# )
 
 # TODO INCORPORATE DIVIDENDS AND FOUNDAMENTALS FILTERS
 # TODO CLEAN OUTLIER RETURNS
@@ -71,16 +122,16 @@ print(
     f"* Number of symbols dropped due to missingness {len(TICKERS) - len(non_missing)}"
 )
 print(f"* Symbols dropped due to missingness {set(TICKERS) - set(non_missing)}")
-print(f"# Number of days in data: {datac.shape[0]}")
-print(f"# Number of days with returns: {returns.shape[0]}")
+print(f"> Number of days in data: {datac.shape[0]}")
+print(f"> Number of days with returns: {returns.shape[0]}")
 print(
-    f"# Number of days dropped due to missingness {datac.shape[0] - returns.shape[0]}"
+    f"> Number of days dropped due to missingness {datac.shape[0] - returns.shape[0]}"
 )
 
 # ===============================================
 # Optimization
 # ===============================================
-print(f"{20*'='} OPTIMIZATION {20*'='}")
+print(f"\n{20*'='} OPTIMIZATION {20*'='}")
 
 # Set number of assets
 NOA = returns.shape[1]
@@ -143,17 +194,17 @@ opt_weight_allocation_nz_sorted = dict(
 )
 
 
-print(f"Simple Returns: {opt_simple_returns:.2%}")
-print(f"Compounded Returns: {opt_compounded_returns:.2%}")
-print(f"Sharpe Ratio Portfolio: {opt_port_summary['Sharpe'].squeeze():.2%}")
+# print(f"Simple Returns: {opt_simple_returns:.2%}")
+# print(f"Compounded Returns: {opt_compounded_returns:.2%}")
+# print(f"Sharpe Ratio Portfolio: {opt_port_summary['Sharpe'].squeeze():.2%}")
 # TODO WHY RETURNS DO NOT MATCH?
-print(f"Portfolio Summary:\n{opt_port_summary}")
-print(f"Weight Allocation:\n{opt_weight_allocation_nz_sorted}")
+print(f"Portfolio Summary (Annualized Metrics):\n{opt_port_summary.T}")
+print(f"\nWeight Allocation:\n{opt_weight_allocation_nz_sorted}")
 
 # ===============================================
 # Simulation
 # ===============================================
-print(f"{20*'='} SIMULATION {20*'='}")
+print(f"\n{20*'='} SIMULATION {20*'='}")
 
 # Set number of portfolios
 NOP = SIMULATION_NUMBER_OF_PORTFOLIOS
@@ -205,17 +256,17 @@ sim_weight_allocation = dict(
     zip(returns_to_use_simulation, np.round(max_sharpe_weights, 4))
 )
 
-print(f"Simple Returns: {sim_simple_returns:.2%}")
-print(f"Compounded Returns: {sim_compounded_returns:.2%}")
-print(f"Sharpe Ratio Portfolio: {max_sharpe['Sharpe']:.2%}")
+# print(f"Simple Returns: {sim_simple_returns:.2%}")
+# print(f"Compounded Returns: {sim_compounded_returns:.2%}")
+# print(f"Sharpe Ratio Portfolio: {max_sharpe['Sharpe']:.2%}")
 # TODO WHY RETURNS DO NOT MATCH?
-print(f"Portfolio Summary:\n{max_sharpe.to_frame().T}")
-print(f"Weight Allocation:\n{sim_weight_allocation}")
+print(f"Portfolio Summary (Annualized Metrics):\n{max_sharpe.to_frame()}")
+print(f"\nWeight Allocation:\n{sim_weight_allocation}")
 
 # ===============================================
 # Comparison of Optimization vs Simulation
 # ===============================================
-
+print(f"\n{20*'='} VISUALIZATION {20*'='}")
 # Compare optimization vs simulation
 wopt = pd.DataFrame().from_dict(
     opt_weight_allocation_nz, orient="index", columns=["Optimization Weights"]
@@ -232,5 +283,5 @@ plot_portfolios(
     assets_data=assets_summary,
     portfolio_data=portfolios_summary,
     optimization_data=opt_port_summary,
-    annotate=False,
+    annotate=True,
 )
