@@ -3,8 +3,9 @@ import datetime
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from newspaper import Article
-from scipy.optimize import minimize
+
+# from newspaper import Article
+# from scipy.optimize import minimize
 
 # pandas options to display more rows and columns
 pd.set_option("display.max_rows", 150)
@@ -49,10 +50,38 @@ indices = [
     "^STOXX50E",
 ]
 
-xticks = yf.Ticker("^NDX")
-# [x for x in dir(xticks) if not x.startswith("_")]
-xticks.history_metadata
+indices = {
+    "United States Dow Jones Industrial Average": "^DJI",
+    "United States S&P 500": "^GSPC",
+    "United States NASDAQ Composite": "^IXIC",
+    "United States Russell 2000": "^RUT",
+    "Canada S&P/TSX Composite Index": "^GSPTSE",
+    "Europe FTSE 100 (UK)": "^FTSE",
+    "Europe DAX (Germany)": "^GDAXI",
+    "Europe CAC 40 (France)": "^FCHI",
+    "Europe EURO STOXX 50": "^STOXX50E",
+    "Europe ATHENS COMPOSITE": "GDAT",
+    "APAC Nikkei 225 (Japan)": "^N225",
+    "APAC Hang Seng Index (Hong Kong)": "^HSI",
+    "APAC Shanghai Composite (China)": "^SSEC",
+    "APAC ASX 200 (Australia)": "^AXJO",
+    "Others BSE SENSEX (India)": "^BSESN",
+    "Others BOVESPA (Brazil)": "^BVSP",
+    "Others MSCI Emerging Markets Index": "^MSCIEF",
+    "Others MSCI World Index": "^WORLD",
+    "Others MSCI EAFE Index": "^EAFE",
+    "Others MSCI ACWI Index": "^ACWI",
+}
+
+# Example usage: Accessing the symbol for the S&P 500
+sp500_symbol = indices["United States"]["S&P 500"]
+print("The symbol for the S&P 500 is:", sp500_symbol)
+
+xticks = yf.Ticker("GD.AT")
+[x for x in dir(xticks) if not x.startswith("_")]
 xticks.get_info()
+xticks.news
+xticks.history_metadata
 xticks.history()
 
 # ===============================================
@@ -68,7 +97,7 @@ xticks.get_info()
 # fetch detailed data per ticker
 # ===============================================
 # Define the ticker symbol
-ticker_symbol = "AAPL"  # "AAPL"
+ticker_symbol = "TITC.AT"  # "AAPL"
 
 # Create the Ticker object
 stock = yf.Ticker(ticker_symbol)
@@ -80,6 +109,7 @@ stock = yf.Ticker(ticker_symbol)
 hd = stock.history(period="max", actions=True)
 
 # misc
+stock.info
 stock.financials
 stock.dividends
 stock.dividends.tail(1).squeeze() / stock.get_fast_info()["lastPrice"]
