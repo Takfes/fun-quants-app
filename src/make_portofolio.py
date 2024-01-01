@@ -1,4 +1,3 @@
-import pprint
 import time
 
 import numpy as np
@@ -11,11 +10,10 @@ from src.conf import RISK_FREE_RATE
 from src.func import (
     annual_risk_return,
     find_below_threshold_missingness,
-    plot_assets_density,
     plot_portfolios,
     rebalance_weights,
 )
-from src.myio import get_tickers, histdata_query, query_duckdb
+from src.myio import histdata_query, query_duckdb
 
 sns.set_style("darkgrid")
 

@@ -1,5 +1,4 @@
 import argparse
-import os
 import sqlite3
 import sys
 import time
@@ -16,7 +15,6 @@ from strategies.GoldenCross import GoldenCross
 from strategies.TripleH import TripleH
 
 import backtrader as bt
-from backtrader import Cerebro
 from helpers import parse_cerebro
 
 strategies = {

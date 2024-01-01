@@ -1,4 +1,21 @@
 repos:
+  # # Adding Pycln
+  # - repo: https://github.com/hadialqattan/pycln
+  #   rev: 'v2.1.5'
+  #   hooks:
+  #   -   id: pycln
+  #       args: ['.']
+  # Adding Pip-compile
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 6.13.0
+    hooks:
+      - id: pip-compile
+  # Adding Autoflake
+  - repo: https://github.com/myint/autoflake
+    rev: v1.4  # Use the most recent revision
+    hooks:
+      - id: autoflake
+        args: ["--in-place", "--remove-all-unused-imports", "--remove-unused-variables", "--ignore-init-module-imports"]
   # Adding PreCommit Hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -18,23 +35,6 @@ repos:
     rev: 5.12.0
     hooks:
       - id: isort
-  # Adding Pip-compile
-  - repo: https://github.com/jazzband/pip-tools
-    rev: 6.13.0
-    hooks:
-      - id: pip-compile
-  # Adding Pycln
-  - repo: https://github.com/hadialqattan/pycln
-    rev: 'v2.1.5'
-    hooks:
-    -   id: pycln
-        args: ['.']
-  # Adding Autoflake
-  - repo: https://github.com/myint/autoflake
-    rev: v1.4  # Use the most recent revision
-    hooks:
-      - id: autoflake
-        args: ["--in-place", "--remove-all-unused-imports", "--remove-unused-variables", "--ignore-init-module-imports"]
 
   # ====================  Security Hooks  ====================
   # # Adding Bandit

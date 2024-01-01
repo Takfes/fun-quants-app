@@ -1,8 +1,3 @@
-import math
-import sys
-
-import numpy as np
-
 import backtrader as bt
 
 debug = False

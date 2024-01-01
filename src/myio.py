@@ -1,15 +1,11 @@
-import datetime
 import logging
 import os
-from typing import List
 
 import duckdb
-import numpy as np
 import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
 from rich.logging import RichHandler
-from tqdm import tqdm
 
 histdata_query = """
     SELECT TICKER,"DATE",AdjClose

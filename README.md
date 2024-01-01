@@ -1,11 +1,16 @@
 <img src="assets/DALL·E 2023-12-29 22.06.04 - An abstract banner image for a GitHub repository, incorporating themes of the stock market, trading, portfolio management, Python, and algorithmic tra.png" width="100%" height="auto"/>
 
-### 🗞 Articles
+### 🤖 AI & Trading
 
-- [10 Rules that Helped me Outperform 90% of Hedge Funds for the Last 6 Years.](https://ldeplano.medium.com/10-rules-i-learned-that-helped-me-outperform-90-of-hedge-funds-over-the-last-6-years-e7eef446a536)
-- [101 Types of Risk Management and Trading Strategies](https://medium.com/@ratneshwarprasadsinha_66909/101-types-of-risk-management-and-trading-strategies-8c31d0897c06)
-- [The Detailed Guide to Value and Deep Value Investing — How to Build a Long Term Portfolio](https://medium.com/due/the-detailed-guide-to-value-and-deep-value-investing-how-to-build-a-long-term-portfolio-c6e679b03baf)
-- [How To Know If A Stock Is Worth Investing In 3 Seconds](https://medium.datadriveninvestor.com/how-to-know-if-a-stock-is-worth-investing-in-3-seconds-4246f6b8053c)
+- [Optimizing the… Target Variable (?) An Example for Trading Machine Learning Models](https://towardsdatascience.com/optimizing-the-target-variable-an-example-for-trading-machine-learning-models-48a1587d7b9a)
+- [How I’m using Machine Learning to Trade in the Stock Market](https://medium.com/analytics-vidhya/how-im-using-machine-learning-to-trade-in-the-stock-market-3ba981a2ffc2)
+- [Time Series Clustering — Deriving Trends and Archetypes from Sequential Data](https://towardsdatascience.com/time-series-clustering-deriving-trends-and-archetypes-from-sequential-data-bb87783312b4)
+
+### 🚥 Market Regime
+
+- [Algorithmic Factor Investing with Market Regime Classification](https://medium.com/@matthewwang_91639/algorithmic-factor-investing-with-market-regime-classification-6bc2f8c7168b)
+- [Classification of Market Regimes Using Standard Deviation](https://medium.com/@junglesven/classification-of-market-regimes-using-standard-deviation-48a613219752)
+- [The Power of machine learning in Factor Investing: Beyond Fama-French Factors with Unsupervised Clustering](https://medium.datadriveninvestor.com/the-power-of-machine-learning-in-factor-investing-beyond-fama-french-factors-with-unsupervised-b411d230b21d)
 
 ### 💬 News & Sentiment
 
@@ -17,12 +22,6 @@
 
 - [AlphaVantage Listing & Delisting Status](https://www.alphavantage.co/documentation/#listing-status)
 - [Stocksymbol API](https://github.com/yongghongg/stock-symbol)
-
-### 🚥 Market Regime
-
-- [Algorithmic Factor Investing with Market Regime Classification](https://medium.com/@matthewwang_91639/algorithmic-factor-investing-with-market-regime-classification-6bc2f8c7168b)
-- [Classification of Market Regimes Using Standard Deviation](https://medium.com/@junglesven/classification-of-market-regimes-using-standard-deviation-48a613219752)
-- [The Power of machine learning in Factor Investing: Beyond Fama-French Factors with Unsupervised Clustering](https://medium.datadriveninvestor.com/the-power-of-machine-learning-in-factor-investing-beyond-fama-french-factors-with-unsupervised-b411d230b21d)
 
 ### 📈 Technical Analysis
 
@@ -54,3 +53,11 @@
 - [Python Package with Tickers](https://pypi.org/project/pytickersymbols/)
 - [Stock Exchanges of the World](https://en.wikipedia.org/wiki/List_of_stock_exchanges)
 - [Athens Stock Exchange Symbols](https://finance.yahoo.com/screener/unsaved/c1da39e2-6cde-497b-a92d-93939eddb9ee?count=150)
+
+### 🗞 Articles
+
+- [Top 3 Swing Trading Strategies for Beginners](https://blog.stockedge.com/top-3-swing-trading-strategies-for-beginners/)
+- [10 Rules that Helped me Outperform 90% of Hedge Funds for the Last 6 Years.](https://ldeplano.medium.com/10-rules-i-learned-that-helped-me-outperform-90-of-hedge-funds-over-the-last-6-years-e7eef446a536)
+- [101 Types of Risk Management and Trading Strategies](https://medium.com/@ratneshwarprasadsinha_66909/101-types-of-risk-management-and-trading-strategies-8c31d0897c06)
+- [The Detailed Guide to Value and Deep Value Investing — How to Build a Long Term Portfolio](https://medium.com/due/the-detailed-guide-to-value-and-deep-value-investing-how-to-build-a-long-term-portfolio-c6e679b03baf)
+- [How To Know If A Stock Is Worth Investing In 3 Seconds](https://medium.datadriveninvestor.com/how-to-know-if-a-stock-is-worth-investing-in-3-seconds-4246f6b8053c)

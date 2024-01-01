@@ -1,9 +1,6 @@
-import math
-
 import numpy as np
 
 import backtrader as bt
-from backtrader.indicators.pivotpoint import PivotPoint
 
 debug = False
 
