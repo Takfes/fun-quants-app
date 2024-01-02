@@ -7,5 +7,6 @@ setup(
     name="my-quants-app",
     version="0.0.1",
     install_requires=requirements,
-    py_modules=["src"],
+    # install_requires=find_packages(),
+    py_modules=["src", "structural"],
 )

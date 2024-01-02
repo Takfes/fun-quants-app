@@ -113,6 +113,10 @@ et-xmlfile==1.1.0
     # via
     #   my-quants-app (setup.py)
     #   openpyxl
+exceptiongroup==1.2.0
+    # via
+    #   my-quants-app (setup.py)
+    #   pytest
 executing==1.2.0
     # via
     #   my-quants-app (setup.py)
@@ -155,6 +159,8 @@ gitpython==3.1.40
     # via
     #   my-quants-app (setup.py)
     #   streamlit
+hmmlearn==0.3.0
+    # via my-quants-app (setup.py)
 html5lib==1.1
     # via
     #   my-quants-app (setup.py)
@@ -178,6 +184,10 @@ importlib-resources==6.0.1
     # via
     #   matplotlib
     #   my-quants-app (setup.py)
+iniconfig==2.0.0
+    # via
+    #   my-quants-app (setup.py)
+    #   pytest
 ipykernel==6.25.1
     # via my-quants-app (setup.py)
 ipython==8.14.0
@@ -201,6 +211,8 @@ joblib==1.3.2
     # via
     #   my-quants-app (setup.py)
     #   nltk
+    #   scikit-learn
+    #   tslearn
 jsonschema==4.20.0
     # via
     #   altair
@@ -222,6 +234,10 @@ kiwisolver==1.4.5
     # via
     #   matplotlib
     #   my-quants-app (setup.py)
+llvmlite==0.41.1
+    # via
+    #   my-quants-app (setup.py)
+    #   numba
 lxml==4.9.3
     # via
     #   finviz
@@ -280,20 +296,28 @@ nodeenv==1.8.0
     # via
     #   my-quants-app (setup.py)
     #   pre-commit
+numba==0.58.1
+    # via
+    #   my-quants-app (setup.py)
+    #   tslearn
 numpy==1.25.2
     # via
     #   altair
     #   contourpy
+    #   hmmlearn
     #   matplotlib
     #   my-quants-app (setup.py)
+    #   numba
     #   pandas
     #   pyarrow
     #   pydeck
+    #   scikit-learn
     #   scipy
     #   seaborn
     #   streamlit
     #   ta
     #   ta-lib
+    #   tslearn
     #   yfinance
 openpyxl==3.1.2
     # via my-quants-app (setup.py)
@@ -304,6 +328,7 @@ packaging==23.1
     #   ipykernel
     #   matplotlib
     #   my-quants-app (setup.py)
+    #   pytest
     #   streamlit
 pandas==2.0.3
     # via
@@ -352,6 +377,10 @@ platformdirs==3.10.0
     #   jupyter-core
     #   my-quants-app (setup.py)
     #   virtualenv
+pluggy==1.3.0
+    # via
+    #   my-quants-app (setup.py)
+    #   pytest
 polars==0.18.15
     # via my-quants-app (setup.py)
 pre-commit==3.3.3
@@ -393,6 +422,8 @@ pyparsing==3.0.9
     # via
     #   matplotlib
     #   my-quants-app (setup.py)
+pytest==7.4.4
+    # via my-quants-app (setup.py)
 python-dateutil==2.8.2
     # via
     #   jupyter-client
@@ -452,8 +483,17 @@ rpds-py==0.16.2
     #   jsonschema
     #   my-quants-app (setup.py)
     #   referencing
+scikit-learn==1.3.2
+    # via
+    #   hmmlearn
+    #   my-quants-app (setup.py)
+    #   tslearn
 scipy==1.11.2
-    # via my-quants-app (setup.py)
+    # via
+    #   hmmlearn
+    #   my-quants-app (setup.py)
+    #   scikit-learn
+    #   tslearn
 seaborn==0.12.2
     # via my-quants-app (setup.py)
 sgmllib3k==1.0.0
@@ -496,6 +536,10 @@ tenacity==8.2.3
     #   finviz
     #   my-quants-app (setup.py)
     #   streamlit
+threadpoolctl==3.2.0
+    # via
+    #   my-quants-app (setup.py)
+    #   scikit-learn
 tinysegmenter==0.3
     # via
     #   my-quants-app (setup.py)
@@ -512,6 +556,7 @@ tomli==2.0.1
     # via
     #   black
     #   my-quants-app (setup.py)
+    #   pytest
 toolz==0.12.0
     # via
     #   altair
@@ -536,6 +581,8 @@ traitlets==5.9.0
     #   jupyter-core
     #   matplotlib-inline
     #   my-quants-app (setup.py)
+tslearn==0.6.3
+    # via my-quants-app (setup.py)
 typing-extensions==4.7.1
     # via
     #   altair
