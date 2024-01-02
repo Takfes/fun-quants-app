@@ -5,6 +5,7 @@
 - [Requirements.txt vs Setup.py in Python: Managing Dependencies](https://levelup.gitconnected.com/requirements-txt-vs-setup-py-in-python-a0e70313f50b)
 - [Building Python Packages Using Setuptools](https://medium.com/@knoldus/building-python-packages-using-setuptools-560217444817)
 - [requirements.txt vs setup.py in Python](https://towardsdatascience.com/requirements-vs-setuptools-python-ae3ee66e28af)
+- [The Hitchhiker’s Guide to Python! - Structuring Your Project](https://docs.python-guide.org/writing/structure/)
 
 ### Commands
 

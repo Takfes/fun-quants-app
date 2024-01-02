@@ -9,6 +9,7 @@
 ### 🚥 Market Regime
 
 - [Algorithmic Factor Investing with Market Regime Classification](https://medium.com/@matthewwang_91639/algorithmic-factor-investing-with-market-regime-classification-6bc2f8c7168b)
+- [The Bull and the Bear: A model for every mood](https://medium.com/@2000rabieomar/the-bull-and-the-bear-a-model-for-every-mood-bce23582bf92)s
 - [Classification of Market Regimes Using Standard Deviation](https://medium.com/@junglesven/classification-of-market-regimes-using-standard-deviation-48a613219752)
 - [The Power of machine learning in Factor Investing: Beyond Fama-French Factors with Unsupervised Clustering](https://medium.datadriveninvestor.com/the-power-of-machine-learning-in-factor-investing-beyond-fama-french-factors-with-unsupervised-b411d230b21d)
 
@@ -41,6 +42,7 @@
 
 ### 🏁 Stock Screeners
 
+- [Stock Market Sectors 101: A Guide to All 11 Sectors](https://money.usnews.com/investing/articles/stock-market-sectors-101-a-guide-to-all-11-sectors)
 - [finvizScreener github](https://github.com/mariostoev/finviz)
 - [Building an Effective Trading Screener with Python and Tradingview](https://medium.com/@facujallia/building-an-effective-trading-screener-with-python-and-tradingview-9329db9afaa9)
 - [TradingViewScreener](https://www.tradingview.com/screener/)
