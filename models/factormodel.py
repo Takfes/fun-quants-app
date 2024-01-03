@@ -26,6 +26,12 @@ class FactorModel:
         self.model_Carhart = None
         self.model_FF5 = None
 
+    def __repr__(self):
+        return f"FactorModel(asset={self.asset}, start_date={self.start_date}, end_date={self.end_date})"
+
+    def __str__(self):
+        return f"FactorModel(asset={self.asset}, start_date={self.start_date}, end_date={self.end_date})"
+
     def get_asset_data(self):
         return yf.download(
             self.asset,
@@ -115,12 +121,3 @@ class FactorModel:
             "Carhart": self.report_sm_model(self.model_Carhart),
             "FF5": self.report_sm_model(self.model_FF5),
         }
-
-
-ASSETS = ["PG"]
-START_DATE = "2020-01-01"
-END_DATE = "2023-12-31"
-
-fm = FactorModel(ASSETS, START_DATE, END_DATE)
-fm.fit()
-pd.DataFrame(fm.results)

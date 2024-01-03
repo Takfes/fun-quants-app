@@ -5,8 +5,8 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 
 setup(
     name="my-quants-app",
-    version="0.0.1",
+    version="0.0.2",
     install_requires=requirements,
     # install_requires=find_packages(),
-    py_modules=["src", "structural"],
+    py_modules=["src", "structural", "models"],
 )

@@ -309,11 +309,13 @@ numpy==1.25.2
     #   my-quants-app (setup.py)
     #   numba
     #   pandas
+    #   patsy
     #   pyarrow
     #   pydeck
     #   scikit-learn
     #   scipy
     #   seaborn
+    #   statsmodels
     #   streamlit
     #   ta
     #   ta-lib
@@ -329,6 +331,7 @@ packaging==23.1
     #   matplotlib
     #   my-quants-app (setup.py)
     #   pytest
+    #   statsmodels
     #   streamlit
 pandas==2.0.3
     # via
@@ -338,6 +341,7 @@ pandas==2.0.3
     #   pandas-datareader
     #   pandas-ta
     #   seaborn
+    #   statsmodels
     #   streamlit
     #   ta
     #   yfinance
@@ -353,6 +357,10 @@ pathspec==0.11.2
     # via
     #   black
     #   my-quants-app (setup.py)
+patsy==0.5.5
+    # via
+    #   my-quants-app (setup.py)
+    #   statsmodels
 peewee==3.17.0
     # via
     #   my-quants-app (setup.py)
@@ -493,6 +501,7 @@ scipy==1.11.2
     #   hmmlearn
     #   my-quants-app (setup.py)
     #   scikit-learn
+    #   statsmodels
     #   tslearn
 seaborn==0.12.2
     # via my-quants-app (setup.py)
@@ -508,6 +517,7 @@ six==1.16.0
     #   feedfinder2
     #   html5lib
     #   my-quants-app (setup.py)
+    #   patsy
     #   python-dateutil
     #   requests-file
     #   user-agent
@@ -523,6 +533,8 @@ stack-data==0.6.2
     # via
     #   ipython
     #   my-quants-app (setup.py)
+statsmodels==0.14.1
+    # via my-quants-app (setup.py)
 stocksymbol==0.0.5
     # via my-quants-app (setup.py)
 streamlit==1.29.0
