@@ -1,13 +1,61 @@
 import datetime
+import os
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import polars as pl
+import requests
 import seaborn as sns
+from dotenv import load_dotenv
 from matplotlib import pyplot as plt
 from scipy.stats import kurtosis, norm, percentileofscore, skew
+from stocksymbol import StockSymbol
+
+
+def get_fundamentals(symbol):
+    load_dotenv()
+    api_key = os.getenv("API_KEY_ALPHA_VANTAGE")
+    url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={symbol}&apikey={api_key}"
+    response = requests.get(url)
+    return response.json()
+
+
+def get_markets(simplify=True):
+    response = requests.get("https://stock-symbol.herokuapp.com/api/market/all")
+    json_data = response.json()
+    if simplify:
+        datasets = []
+        for item in json_data["data"]:
+            temp = pd.DataFrame(item.get("index"))
+            temp["market"] = item.get("market")
+            temp["abbreviation"] = item.get("abbreviation")
+            datasets.append(temp)
+        data = (
+            pd.concat(datasets).sort_values(by=["market", "id"]).reset_index(drop=True)
+        )
+        return data
+    else:
+        return json_data
+
+
+def get_symbols(market=None, index=None, symbols_only: str = None, simplify=True):
+    load_dotenv()
+    api_key = os.getenv("API_KEY_STOCK_SYMBOL")
+    ss = StockSymbol(api_key)
+    results = ss.get_symbol_list(market=market, index=index, symbols_only=symbols_only)
+    if simplify:
+        return sorted(
+            list(
+                filter(
+                    None,
+                    [x.get("symbol") for x in results],
+                )
+            )
+        )
+    else:
+        return results
 
 
 def convert_date(x):
