@@ -1,4 +1,4 @@
-### 🗞 Good Reads
+### 🧙🏻‍♂️ Trading Articles
 
 - [Top 3 Swing Trading Strategies for Beginners](https://blog.stockedge.com/top-3-swing-trading-strategies-for-beginners/)
 - [10 Rules that Helped me Outperform 90% of Hedge Funds for the Last 6 Years.](https://ldeplano.medium.com/10-rules-i-learned-that-helped-me-outperform-90-of-hedge-funds-over-the-last-6-years-e7eef446a536)
