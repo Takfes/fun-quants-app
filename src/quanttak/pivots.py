@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def identify_pivots(close_series, window=5):
+def find_pivots(close_series, window=5):
     """
     Identify pivot points in the 'Close' time series data and characterize as minima or maxima.
 
