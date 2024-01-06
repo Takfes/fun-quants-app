@@ -1,6 +1,5 @@
 import pandas as pd
 import talib
-import yfinance
 
 
 class FeatureEngineer:
@@ -230,7 +229,6 @@ class FeatureEngineer:
         self.dict["CYCLE_TRENDMODE"] = talib.HT_TRENDMODE(
             self.close
         )  # Hilbert Transform - Trend vs Cycle Mode
-        # ... Add more functions as needed ...
 
     def generate_statistic_functions(self):
         high = self.high
@@ -270,14 +268,3 @@ class FeatureEngineer:
             print(f"Shape before dropping nas: {shape_before} and after: {shape_after}")
             print(f"Dropped {shape_before[0] - shape_after[0]} rows")
         return data
-
-
-SYMBOL = "AAPL"
-START = "2015-01-01"
-END = "2024-01-02"
-
-# Usage:
-price_data = yfinance.download(SYMBOL, start=START, end=END)
-fedata = FeatureEngineer(price_data, dropna=True)
-fedata
-fedata.generate_all_indicators()

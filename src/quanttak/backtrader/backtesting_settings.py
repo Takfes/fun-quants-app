@@ -1,5 +1,3 @@
-import numpy as np
-
 strategy_settings_dictionary = {
     "ma": {"fast": [15, 25], "slow": 30},
     "dic": {

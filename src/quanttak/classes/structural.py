@@ -10,7 +10,7 @@ import yfinance as yf
 
 
 @dataclass
-class FactorModel:
+class FMRegressor:
     x_years_ago = 5
     today = datetime.today()
     start_year_x_years_ago = datetime(today.year - x_years_ago, 1, 1)

@@ -1,68 +1,131 @@
-import numpy as np
-
 import backtrader as bt
+import numpy as np
 
 debug = False
 
 
-# Custom Indicator
-class DICK(bt.Indicator):
-    lines = ("vwma", "bbt", "bbb")  # output lines (array)
-    params = (("period", 110), ("factor", 0.618), ("multiplier", 3.0))
+class PAT(bt.Indicator):
+    lines = ("ph", "pl")
+
+    plotinfo = dict(plot=True, subplot=False, plotlinelabels=True)
+    plotlines = dict(
+        ph=dict(
+            marker="o", markersize=6.0, color="blue", fillstyle="full", ls=""
+        ),  # $\u21E9$
+        pl=dict(
+            marker="o", markersize=6.0, color="red", fillstyle="full", ls=""
+        ),  # $\u21E7$
+    )
+
+    params = (
+        ("atr_period", 170),
+        ("pivot_period", 3),
+        ("factor", 6.5),
+        ("printlog", True),
+        ("barplot", False),  # plot above/below max/min for clarity in bar plot
+        ("bardist", 0.005),  # distance to max/min in absolute perc
+    )
 
     def __init__(self):
         # indicate min period ; i.e. buffering period
-        self.addminperiod(self.p.period)
+        self.buffering_period = (self.p.pivot_period * 2) + 1
+        self.addminperiod(self.buffering_period)
+        self.ATR = bt.indicators.ATR(self.data, period=self.p.atr_period)
+
+        self.center = 0
+        self.lastpp = 0
+        self.tup = 0
+        self.tdn = 0
+        self.trend = [0, 1]
+        self.ph = self.pl = 0
+
+    def log(self, txt, dt=None, doprint=False):
+        if self.params.printlog or doprint:
+            dt = dt or self.datas[0].datetime.datetime(0)
+            print("%s, %s" % (dt.isoformat(), txt))
 
     def next(self):
-        # calculate vwma
-        highp = np.array(self.data.high.get(size=self.p.period))
-        lowp = np.array(self.data.low.get(size=self.p.period))
-        closep = np.array(self.data.close.get(size=self.p.period))
-        volumep = np.array(self.data.volume.get(size=self.p.period))
-        hlcp = (highp + lowp + closep) / 3.0
-        sumprodp = hlcp * volumep
-        vwma = sum(sumprodp) / sum(volumep)
-        # add vwma line
-        self.lines.vwma[0] = vwma
-        # calculate stdev hlc
-        std = np.std(hlcp)
-        # add bbt & bbb lines
-        self.lines.bbt[0] = vwma + (self.p.multiplier * self.p.factor * std)
-        self.lines.bbb[0] = vwma - (self.p.multiplier * self.p.factor * std)
+        # grab necessary info
+        highp = np.array(self.data.high.get(size=self.buffering_period))
+        lowp = np.array(self.data.low.get(size=self.buffering_period))
+        closep = np.array(self.data.close.get(size=self.buffering_period))
+
+        # get highest high or lowest low position
+        highest_bar_position = highp.argmax()
+        lowest_bar_position = lowp.argmin()
+
+        # check for pivot high
+        if highest_bar_position == (self.p.pivot_period + 1):
+            self.lines.ph[-(self.p.pivot_period + 1)] = self.ph = np.max(highp)
+            self.lastpp = np.max(highp)
+            # self.cacheh = len(self.datas[0])
+
+        # check for pivot low
+        if lowest_bar_position == (self.p.pivot_period + 1):
+            self.lines.pl[-(self.p.pivot_period + 1)] = self.pl = np.min(lowp)
+            self.lastpp = np.min(lowp)
+            # self.cachel = len(self.datas[0])
+
+        if self.lastpp != 0:
+            # calculate center
+            if self.center == 0:
+                self.center = self.lastpp
+            else:
+                self.center = (self.center * 2 + self.lastpp) / 3
+
+            # calculate up and down
+            self.up = self.center - (self.p.factor * self.ATR[0])
+            self.dn = self.center + (self.p.factor * self.ATR[0])
+
+            # calculate trend up
+            if closep[-1] > self.tup:
+                self.tup = max(self.tup, self.up)
+            else:
+                self.tup = self.up
+
+            # calculate trend down
+            if closep[-1] < self.tdn:
+                self.tup = min(self.tdn, self.dn)
+            else:
+                self.tdn = self.dn
+
+            # calculate trend
+            if closep[0] > self.tdn:
+                self.trend.append(1)
+            elif closep[0] < self.tup:
+                self.trend.append(-1)
+            else:
+                self.trend.append(1)
+
+            # calculate trigger line
+            if self.trend[-1] == 1:
+                self.tl = self.tup
+            else:
+                self.tl = self.tdn
 
         if debug:
-            print("> highp : ", "\n", type(highp), "\n", highp, "\n")
-            print("> lowp : ", "\n", type(lowp), "\n", lowp, "\n")
-            print("> closep : ", "\n", type(closep), "\n", closep, "\n")
-            print("> volumep : ", "\n", type(volumep), "\n", volumep, "\n")
-            print("> hlcp : ", "\n", type(hlcp), "\n", hlcp, "\n")
-            print("> sumprodp : ", "\n", type(sumprodp), "\n", sumprodp, "\n")
-            print("> vwma : ", "\n", type(vwma), "\n", vwma, "\n")
-            print("> std(hlcp) : ", "\n", type(std), "\n", std, "\n")
+            self.log(f"length : {len(self.datas[0])}")
+            self.log(f"highp : {highp[0]}")
+            self.log(highp)
+            self.log(f"highest_bar_position : {highest_bar_position}")
+            self.log(f"> ph : {self.ph}")
+            self.log(f"> pl : {self.pl}")
+            self.log(50 * "=")
 
 
-# Strategy
-
-
-class Dictum(bt.Strategy):
+class TripleH(bt.Strategy):
     params = (
         ("symbol", "unknown"),
         ("cash", 1000),
-        ("risk", 0.1),
-        ("wma_period", 300),
-        ("rsi_period", 14),
-        ("rsi_value_long", 57),
-        ("rsi_value_short", 57),
+        ("risk", 0.25),
         ("stoploss", 0.01),
         ("takeprofit", 0.01),
         ("trstop", 0),
         ("trstop_percent", 0.005),
         ("short_positions", 0),
-        ("emergency_exit", 1),
-        ("period", 110),
-        ("factor", 0.618),
-        ("multiplier", 3.0),
+        ("atr_period", 170),
+        ("pivot_period", 3),
+        ("factor", 6.5),
         ("printlog", False),
     )
 
@@ -88,24 +151,15 @@ class Dictum(bt.Strategy):
         self.dl = self.datas[1].low
         self.dc = self.datas[1].close
 
-        # 60 minute data
-        self.ho = self.datas[2].open
-        self.hh = self.datas[2].high
-        self.hl = self.datas[2].low
-        self.hc = self.datas[2].close
-
         # indicators
-        self.rsi = bt.indicators.RSI_SMA(self.datas[2], period=self.params.rsi_period)
-        self.wma = bt.indicators.WeightedMovingAverage(
-            self.datas[1], period=self.params.wma_period
-        )
-        dick = self.dick = DICK(
+        self.ATR = bt.indicators.ATR(self.datas[1], period=self.p.atr_period)
+        pat = self.pat = PAT(
             self.datas[1],
-            period=self.p.period,
+            atr_period=self.p.atr_period,
+            pivot_period=self.p.pivot_period,
             factor=self.p.factor,
-            multiplier=self.p.multiplier,
         )
-        dick.plotinfo.subplot = False
+        pat.plotinfo.subplot = False
 
     def log(self, txt, dt=None, doprint=False):
         if self.params.printlog or doprint:
@@ -211,10 +265,9 @@ class Dictum(bt.Strategy):
         # OPEN POSITIONS
         if not self.position:
             # OPEN LONG
-            if (self.dc[0] > self.dick.lines.bbt) and (self.dc[0] > self.wma):
+            if (self.pat.trend[-1] == 1) & (self.pat.trend[-2] == -1):
                 self.log(f"SIGNAL NUMBER #{self.signal_number}")
                 self.signal_number += 1
-                # if (self.dataclose[0] > self.dick.lines.bbt) and (self.dataclose[0] > self.wma):
                 self.sizer()
                 self.log(
                     f"(1) SIGNAL NOTICE: Buy {self.size} shares of {self.params.symbol} at {self.data.close[0]:.2f}"
@@ -232,11 +285,9 @@ class Dictum(bt.Strategy):
 
             # OPEN SHORT
             if self.params.short_positions:
-                # if self.signal_short:
-                if (self.dc[0] < self.dick.lines.bbb) and (self.dc[0] < self.wma):
+                if (self.pat.trend[-1] == -1) & (self.pat.trend[-2] == 1):
                     self.log(f"SIGNAL NUMBER #{self.signal_number}")
                     self.signal_number += 1
-                    # if (self.dataclose[0] < self.dick.lines.bbb) and (self.dataclose[0] < self.wma):
                     self.sizer()
                     self.log(
                         f"(1) SIGNAL NOTICE: Sell {self.size} shares of {self.params.symbol} at {self.data.close[0]:.2f}"
@@ -256,6 +307,17 @@ class Dictum(bt.Strategy):
         else:
             # CLOSE LONG
             if self.position.size > 0:
+                ##################### TO USE DIFFERENT RESAMPLE PERIOD #####################
+                #
+                # self.do open
+                # self.dh high
+                # self.dl low
+                # self.dc close
+                #
+                # example : self.dc[0] current data close for resampled data
+                #
+                ############################################################################
+
                 # TAKE PROFIT
                 if self.datahigh[0] >= self.executed_price * (
                     1 + self.params.takeprofit
@@ -268,16 +330,6 @@ class Dictum(bt.Strategy):
                     )
                     self.log(
                         f"(3) CLOSE LONG position at {self.executed_price * (1 + self.params.takeprofit):.2f}"
-                    )
-                    self.profit_loss = "profit"
-                elif (
-                    (self.params.emergency_exit == 1)
-                    and (self.rsi < self.params.rsi_value_long)
-                    and (self.datahigh[0] > self.executed_price)
-                ):
-                    self.close()
-                    self.log(
-                        f"(3) EMERGENCY EXIT: CLOSE LONG position at {self.executed_price:.2f}"
                     )
                     self.profit_loss = "profit"
                 # STOP LOSS
@@ -306,16 +358,6 @@ class Dictum(bt.Strategy):
                             f"(3) CLOSE SHORT position at {self.executed_price * (1 - self.params.takeprofit):.2f}"
                         )
                         self.profit_loss = "profit"
-                    elif (
-                        (self.params.emergency_exit == 1)
-                        and (self.rsi > self.params.rsi_value_short)
-                        and (self.datahigh[0] < self.executed_price)
-                    ):
-                        self.close()
-                        self.log(
-                            f"(3) EMERGENCY EXIT: CLOSE SHORT position at {self.executed_price:.2f}"
-                        )
-                        self.profit_loss = "profit"
                     # STOP LOSS
                     if self.datahigh[0] >= self.executed_price * (
                         1 + self.params.stoploss
@@ -328,9 +370,9 @@ class Dictum(bt.Strategy):
                         self.profit_loss = "loss"
 
     def stop(self):
-        self.log(f'\n{50*"+"}\n')
+        self.log(f'\n{50 * "+"}\n')
         self.log(
-            f"STOP RESULTS : \n\n* factor : {self.p.factor}\n* multiplier : {self.p.multiplier} \n* period : {self.p.period}",
+            f"STOP RESULTS : \n\n* atr_period : {self.p.atr_period}\n* pivot_period : {self.p.pivot_period} \n* factor : {self.p.factor}",
             doprint=False,
         )
-        self.log(f'\n{50*"+"}\n')
+        self.log(f'\n{50 * "+"}\n')

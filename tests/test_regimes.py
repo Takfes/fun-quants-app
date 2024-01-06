@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import yfinance as yf
 
-from structural.hmm import HMMRegime
+from quanttak.classes.regimes import HMMRegime
 
 # Get Data
 dt = yf.Ticker("PG")

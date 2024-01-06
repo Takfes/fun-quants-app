@@ -5,7 +5,6 @@ import pandas as pd
 import seaborn as sns
 import yfinance as yf
 from scipy.optimize import minimize
-
 from src.conf import RISK_FREE_RATE
 from src.func import (
     annual_risk_return,

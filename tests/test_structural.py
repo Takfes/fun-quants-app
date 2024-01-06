@@ -1,13 +1,13 @@
 import pandas as pd
 import pytest
 
-from models.factormodel import FactorModel
+from quanttak.classes.structural import FMRegressor
 
 ASSETS = ["PG"]
 START_DATE = "2020-01-01"
 END_DATE = "2023-12-31"
 
-fm = FactorModel(ASSETS, START_DATE, END_DATE)
+fm = FMRegressor(ASSETS, START_DATE, END_DATE)
 fm.fit()
 pd.DataFrame(fm.results)
 
@@ -17,7 +17,7 @@ def factor_model():
     ASSETS = ["PG"]
     START_DATE = "2020-01-01"
     END_DATE = "2023-12-31"
-    return FactorModel(ASSETS, START_DATE, END_DATE)
+    return FMRegressor(ASSETS, START_DATE, END_DATE)
 
 
 def test_get_asset_data(factor_model):

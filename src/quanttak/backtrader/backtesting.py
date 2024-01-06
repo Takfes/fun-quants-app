@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import backtrader as bt
 import config
 import pandas as pd
 from backtesting_settings import strategy_analyzers, strategy_settings_dictionary
@@ -14,7 +15,6 @@ from strategies.Dictum import Dictum
 from strategies.GoldenCross import GoldenCross
 from strategies.TripleH import TripleH
 
-import backtrader as bt
 from helpers import parse_cerebro
 
 strategies = {

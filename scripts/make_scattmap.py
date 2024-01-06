@@ -2,7 +2,6 @@ import pprint
 
 import pandas as pd
 from matplotlib import pyplot as plt
-
 from src.conf import RISK_FREE_RATE
 from src.func import annual_risk_return, find_below_threshold_missingness
 from src.myio import query_duckdb

@@ -2,11 +2,9 @@ import os
 import time
 
 import pandas as pd
-import yfinance as yf
 from dotenv import load_dotenv
-from tqdm import tqdm
-
 from src.myio import configure_logging, fetch_fundamentals, get_tickers
+from tqdm import tqdm
 
 # Load environment variables from .env file
 load_dotenv()

@@ -4,7 +4,6 @@ import time
 import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
-
 from src.myio import configure_logging, get_tickers, push_data_to_ohlc
 
 # define CHUNKSIZE
