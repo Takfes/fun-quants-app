@@ -15,6 +15,19 @@ ticker_a = ["AAPL", "MSFT", "AMZN", "GOOGL", "TSLA", "FB", "BRK.B", "JNJ", "JPM"
 ticker_b = ["ZM", "PLTR", "LMND", "NIO", "SNOW", "CRWD", "BYND", "DKNG", "PLUG", "U"]
 ticker_d = ["RIO", "MO", "JPM", "MCD", "HD"]
 
+# Get OHLC Data - Multiple symbols
+yraw = yf.download(ticker_a, group_by="ticker")
+
+ydata = (
+    yraw.stack(level=0)
+    .reset_index()
+    .rename(columns={"level_1": "Symbol"})
+    .sort_values(by=["Symbol", "Date"])
+    .set_index("Date")
+    .rename(columns=lambda x: x.lower().replace(" ", ""))
+)
+print(f"{ydata.shape=}")
+
 # Download data
 df_a = yf.download(ticker_a, period="max")
 
@@ -27,6 +40,17 @@ df_a_long = (
 
 # keep only the adjusted close
 df_a_long_adjclose = df_a_long[["ticker", "Adj Close"]]
+
+# ===============================================
+# Get Fundamentals
+# ===============================================
+
+from quanttak.func import get_fundamentals_yf
+
+# Get Fundamentals Data
+fundamentals = [get_fundamentals_yf(symbol) for symbol in ticker_a]
+len(fundamentals)
+
 
 # ===============================================
 # Get Indices Data
@@ -107,11 +131,41 @@ hd = stock.history(period="max", actions=True)
 
 # misc
 stock.info
-stock.financials
+
+stock.financials.shape
+stock.financials.index
+
+# FINANCIALS TRENDS CODE BASED ON CHAT-GPT
+# financials = stock.financials.T
+# # Calculate the margins
+# financials["Gross Margin"] = (
+#     financials["Total Revenue"] - financials["Cost Of Revenue"]
+# ) / financials["Total Revenue"]
+# financials["Operating Margin"] = (
+#     financials["Operating Income"] / financials["Total Revenue"]
+# )
+# # EBITDA Margin calculation might require additional data like Depreciation & Amortization
+# financials["Net Profit Margin"] = financials["Net Income"] / financials["Total Revenue"]
+# # Convert margins to percentages
+# financials[["Gross Margin", "Operating Margin", "Net Profit Margin"]] *= 100
+
+# BALANCESHEET CHATGPT ANALYSIS
+balancesheet = stock.balancesheet.T
+balancesheet.to_clipboard()
+
+stock.quarterly_financials.shape
 stock.dividends
 stock.dividends.tail(1).squeeze() / stock.get_fast_info()["lastPrice"]
 
 stock.get_info()
+stock.get_news()
+stock.balancesheet
+stock.financials
+stock.quarterly_financials
+
+stock.calendar()
+stock.get_trend_details()
+stock.get_earnings_trend()
 stock.get_earnings_forecast()
 stock.get_analyst_price_target()
 stock.analyst_price_target()
@@ -119,7 +173,6 @@ stock.get_recommendations()
 stock.recommendations()
 stock.get_history_metadata()
 stock.get_isin()
-stock.get_news()
 
 
 stock.get_info()["address1"]

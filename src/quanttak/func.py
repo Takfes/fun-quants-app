@@ -14,10 +14,41 @@ from scipy.stats import kurtosis, norm, percentileofscore, skew
 from stocksymbol import StockSymbol
 
 
-def calculate_tpsl(close_prices, tp, sl):
+def make_target_rtns(
+    close_prices: pd.Series,
+    period: int = 1,
+    return_type: str = "simple",
+    binary: bool = False,
+) -> pd.Series:
+    """
+    Calculate future return rates from close prices and optionally convert to binary target.
+    Parameters:
+        close_prices (pd.Series): Series of close prices.
+        period (int): Number of periods to calculate return over.
+        return_type (str): Type of return calculation ('log' or 'simple').
+        binary (bool): If True, convert returns to binary (1 if positive, 0 otherwise).
+    Returns:
+        pd.Series: Calculated future returns or binary target.
+    """
+    if period <= 0:
+        raise ValueError(f"Period must be positive, got {period}")
+    if return_type == "log":
+        returns = np.log(close_prices.shift(-period)) - np.log(close_prices)
+    elif return_type == "simple":
+        returns = close_prices.shift(-period).pct_change(period)
+    else:
+        raise ValueError(f"Invalid return type '{return_type}'")
+    returns = returns.dropna()
+    returns.name = "returns"
+    if binary:
+        return (returns > 0).astype(int)
+    else:
+        return returns
+
+
+def make_target_tpsl(close_prices, tp: float = 0.03, sl: float = -0.03):
     """
     For each closing price, calculate if T/P or S/L is hit first and after how many days.
-
     :param close_prices: A pandas Series of closing prices.
     :param tp: Target profit level as a positive float (e.g., 0.05 for 5%).
     :param sl: Stop loss level as a negative float (e.g., -0.05 for -5%).
@@ -25,19 +56,15 @@ def calculate_tpsl(close_prices, tp, sl):
     """
     # Calculate daily returns
     returns = close_prices.pct_change()
-
     # Create a DataFrame to hold results
     results = pd.DataFrame(index=close_prices.index, columns=["Hit", "Wait", "Returns"])
-
     # Loop over the close prices
     for i in range(len(close_prices)):
         # Calculate the cumulative return from the current day forward
         forward_returns = (1 + returns.iloc[i:]).cumprod() - 1
-
         # Check if T/P or S/L is hit first
         tp_hit_days = forward_returns[forward_returns >= tp].index.min()
         sl_hit_days = forward_returns[forward_returns <= sl].index.min()
-
         # Determine which comes first, T/P or S/L
         if pd.isnull(tp_hit_days) and pd.isnull(sl_hit_days):
             # Neither T/P nor S/L is hit
@@ -64,13 +91,66 @@ def calculate_tpsl(close_prices, tp, sl):
             results.at[close_prices.index[i], "Returns"] = forward_returns.loc[
                 sl_hit_days
             ]
-
-    return results.dropna().astype(
-        {"Hit": "str", "Wait": "int32", "Returns": "float64"}
+    return (
+        results.dropna()
+        .astype({"Hit": "str", "Wait": "int32", "Returns": "float64"})
+        .assign(HitBinary=lambda x: (x.Hit == "TP").astype("int"))
+        .rename(columns=lambda x: x.lower())
     )
 
 
-def get_fundamentals(symbol):
+def get_fundamentals_yf(symbol: str):
+    import yfinance as yf
+
+    metadata = [
+        "shortName",  # A shorter or abbreviated name for the company.
+        "longName",  # The full name of the company.
+        "exchange",  # The stock exchange where the stock is traded.
+        "quoteType",  # Indicates the type of financial instrument, e.g., stock, option, mutual fund.
+        "sectorDisp",
+        # -----------------------------------------------
+        "marketCap",  # The total market value of a company's outstanding shares of stock. It's calculated by multiplying the stock's price by the total number of outstanding shares.
+        "currentPrice",  # The current price of the stock.
+        "fiftyTwoWeekLow",
+        "fiftyTwoWeekHigh",
+        # -----------------------------------------------
+        "52WeekChange",  # The percentage change in a stock's price over the past 52 weeks.
+        "beta",  # A measure of a stock's volatility in relation to the overall market. A beta greater than 1 indicates higher volatility, while less than 1 indicates lower volatility.
+        # -----------------------------------------------
+        "trailingEps",  # The sum of a company's earnings per share for the trailing 12 months.
+        "trailingPE",  # Price-to-Earnings ratio based on the past 12 months of earnings.
+        # -----------------------------------------------
+        "bookValue",
+        "priceToBook",  # The ratio of a company's stock price to its book value per share.
+        # -----------------------------------------------
+        "earningsQuarterlyGrowth",
+        "earningsGrowth",  # The percentage growth in a company's earnings over a specific period.
+        "revenueGrowth",  # The percentage growth in a company's revenue over a specific period.
+        # -----------------------------------------------
+        "volume",
+        "averageDailyVolume10Day",
+        # -----------------------------------------------
+        "dividendRate",
+        "dividendYield",  # The annual dividend payment divided by the stock's current market price. It indicates the income generated from an investment in the stock.
+        "recommendationKey",  # The consensus recommendation of analysts for the stock.
+    ]
+    data = {}
+    data["symbol"] = symbol
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.get_info()
+        for metric in metadata:
+            data[f"{metric}"] = info.get(metric, None)
+    except Exception as e:
+        print(f"Error for {symbol=}")
+        print(e)
+        for metric in metadata:
+            data[f"{metric}"] = None
+    finally:
+        return data
+
+
+def get_fundamentals_av(symbol):
     load_dotenv()
     api_key = os.getenv("API_KEY_ALPHA_VANTAGE")
     url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={symbol}&apikey={api_key}"
