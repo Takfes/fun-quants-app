@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from quanttak.classes.structural import FMRegressor
+from quanttak.structural import FMRegressor
 
 ASSETS = ["PG"]
 START_DATE = "2020-01-01"

@@ -22,3 +22,4 @@
 - 📈 [Technical Analysis](docs/tech-analysis.md)
 - 💬 [News & Sentiment](docs/new-sentiment.md)
 - 🏁 [Stock Screeners](docs/stock-screners.md)
+- 🧮 [Margin Trading](docs/margin-trading.md)

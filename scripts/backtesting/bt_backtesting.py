@@ -8,14 +8,14 @@ from pathlib import Path
 import backtrader as bt
 import config
 import pandas as pd
-
-from helpers import parse_cerebro
 from scripts.bt_settings import strategy_analyzers, strategy_settings_dictionary
 from strategies.BuyDip import BuyDip
 from strategies.BuyHold import BuyHold
 from strategies.Dictum import Dictum
 from strategies.GoldenCross import GoldenCross
 from strategies.TripleH import TripleH
+
+from helpers import parse_cerebro
 
 strategies = {
     "ma": GoldenCross,

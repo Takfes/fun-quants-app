@@ -7,7 +7,6 @@ import polars as pl
 import seaborn as sns
 import yfinance as yf
 from matplotlib import pyplot as plt
-
 from src.conf import *
 
 sns.set_style("darkgrid")

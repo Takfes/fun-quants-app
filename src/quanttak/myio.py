@@ -1,48 +1,8 @@
-import logging
 import os
 
 import duckdb
 import pandas as pd
-import yfinance as yf
 from dotenv import load_dotenv
-from rich.logging import RichHandler
-
-histdata_query = """
-    SELECT TICKER,"DATE",AdjClose
-    FROM main.ohlc
-    WHERE 1=1
-    AND Ticker IN {tickers}
-    AND "DATE" >= '{start_date}'
-    AND "DATE" <  '{end_date}'
-    ORDER BY 1,2
-    """
-
-
-def configure_logging(console_output=True, log_to_file=False, log_file_path=None):
-    # Create a logger
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    # Create a formatter
-    formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-    )
-    # Handlers
-    handlers = []
-    if console_output:
-        console_handler = RichHandler(level=logging.INFO)
-        console_handler.setFormatter(formatter)
-        handlers.append(console_handler)
-    if log_to_file:
-        if log_file_path is None:
-            raise ValueError("Log file path must be provided if log_to_file is True")
-        file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        handlers.append(file_handler)
-    # Add handlers to the logger
-    for handler in handlers:
-        logger.addHandler(handler)
-    return logger
 
 
 def query_duckdb(sql_query):
@@ -81,20 +41,3 @@ def push_data_to_ohlc(df: pd.DataFrame):
     )
     # Close the connection
     conn.close()
-
-
-def get_tickers(filter: str = None):
-    temp = pd.read_excel("data/se_tickers.xlsx")
-    return temp
-
-
-def fetch_fundamentals(symbol: str):
-    from src.conf import metadata
-
-    ticker = yf.Ticker(symbol)
-    info = ticker.get_info()
-    data = {}
-    data[f"ticker"] = symbol
-    for metric in metadata:
-        data[f"{metric}"] = info.get(metric, None)
-    return data

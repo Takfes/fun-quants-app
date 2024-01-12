@@ -18,7 +18,7 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
-from quanttak.classes.features import FeatureEngineer
+from quanttak.features import FeatureEngineer
 from quanttak.func import make_target_rtns, make_target_tpsl
 
 START = "2015-01-01"

@@ -38,7 +38,7 @@ def plot_pivots(close_series, window=5):
     :param window: The number of periods on either side to use for identifying local extrema.
     """
     # Identify pivots using the identify_pivots function
-    pivots = identify_pivots(close_series, window)
+    pivots = find_pivots(close_series, window)
 
     # Set up the plot
     plt.figure(figsize=(14, 7))
@@ -78,7 +78,7 @@ TICKER = "AAPL"
 
 df = pd.DataFrame().ta.ticker(TICKER, period="5y", interval="1d")
 # Example usage
-pivot_points = identify_pivots(df["Close"], window=22)
+pivot_points = find_pivots(df["Close"], window=22)
 
 # Merge pivot points with original DataFrame
 df[["Pivots", "Type"]] = pivot_points

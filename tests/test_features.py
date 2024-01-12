@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 import yfinance
 
-from quanttak.classes.features import FeatureEngineer
+from quanttak.features import FeatureEngineer
 
 SYMBOL = "AAPL"
 START = "2023-01-01"
