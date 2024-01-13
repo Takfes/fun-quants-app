@@ -21,7 +21,6 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, TimeSeries
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
-from quanttak.data import fetch_ohlcv_data
 from quanttak.features import FeatureEngineer
 from quanttak.targets import make_target_rtns, make_target_tpsl
 
@@ -102,11 +101,12 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 SINCE = "2022-01-01 00:00:00"
 SYMBOL = "BTC/USDT"
 TIMEFRAME = "1h"
+FILEPATH = f"data/crypto_data_{SYMBOL.lower().replace('/','')}_{TIMEFRAME.lower()}_{SINCE.replace(' ','_').replace('-','').replace(':','')}.pkl"
 
-rawdata = fetch_ohlcv_data(symbol=SYMBOL, timeframe=TIMEFRAME, since=SINCE)
-rawdata.to_pickle(
-    f"data/crypto_data_{SYMBOL.lower().replace('/','')}_{TIMEFRAME.lower()}_{SINCE.replace(' ','_').replace('-','').replace(':','')}.pkl"
-)
+# rawdata = fetch_ohlcv_data(symbol=SYMBOL, timeframe=TIMEFRAME, since=SINCE)
+# rawdata.to_pickle(FILEPATH)
+
+rawdata = pd.read_pickle(FILEPATH)
 
 # Get features
 fdata = FeatureEngineer(
@@ -126,11 +126,10 @@ fdata = FeatureEngineer(
 
 target_rtns = make_target_rtns(rawdata.close, binary=True)
 
-target_tpsl_out = make_target_tpsl(rawdata.close, tp=0.05, sl=-0.03)
+target_tpsl_out = make_target_tpsl(rawdata.close)
 rawdata.close.to_clipboard()
 target_tpsl_out.to_clipboard()
-
-target_tpsl = target_tpsl_out["hitbinary"]
+target_tpsl = target_tpsl_out["hit_binary"]
 
 data = fdata.join(target_rtns, how="inner").join(target_tpsl, how="inner")
 
@@ -289,3 +288,12 @@ resu = pd.concat(
 rsg = pd.concat(metrics)
 resu_grouped = rsg.groupby(rsg.index).agg(["min", "mean", "std"]).loc[resu.index]
 resu_grouped.loc[:, sorted(resu_grouped.columns, key=lambda x: x[1])]
+
+# TODO
+# Introduce a function to adjust train & test sets
+# 1. Need to account for look-ahead bias
+# That is exclude train observations whose target is based on test info
+# 2. Need to establish iid observations
+# That is exclude multiple train & test observations which may link back to same hit_date info
+# You may determine amount of observation in each set affected from the same hit_date
+# Impose a distribution on the observations and sample based on that
