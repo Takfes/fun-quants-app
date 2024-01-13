@@ -1,29 +1,29 @@
 import pandas as pd
 import ppscore as pps
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import SelectFromModel
 
 pd.options.mode.chained_assignment = None  # Disable the SettingWithCopyWarning
 
+from lightgbm import LGBMClassifier
 from sklearn.base import clone
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
     f1_score,
+    make_scorer,
     precision_score,
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import TimeSeriesSplit
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, TimeSeriesSplit
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from quanttak.data import fetch_ohlcv_data
 from quanttak.features import FeatureEngineer
 from quanttak.targets import make_target_rtns, make_target_tpsl
-
-SINCE = "2023-01-01 00:00:00"
-SYMBOL = "BTC/USDT"
-TIMEFRAME = "1h"
 
 
 def evaluate_model(model, X_train, y_train, X_test, y_test):
@@ -93,8 +93,20 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     )
 
 
+"""
+# ==============================================================
 # Get Crypto OHLC Data
+# ==============================================================
+"""
+
+SINCE = "2022-01-01 00:00:00"
+SYMBOL = "BTC/USDT"
+TIMEFRAME = "1h"
+
 rawdata = fetch_ohlcv_data(symbol=SYMBOL, timeframe=TIMEFRAME, since=SINCE)
+rawdata.to_pickle(
+    f"data/crypto_data_{SYMBOL.lower().replace('/','')}_{TIMEFRAME.lower()}_{SINCE.replace(' ','_').replace('-','').replace(':','')}.pkl"
+)
 
 # Get features
 fdata = FeatureEngineer(
@@ -106,13 +118,35 @@ fdata = FeatureEngineer(
     colname_volume="volume",
 ).generate_all_indicators()
 
-# Make Target Columns
-target_tpsl = make_target_tpsl(rawdata.close)["hitbinary"]
-target_rtns = make_target_rtns(rawdata.close, binary=True)
-data = fdata.join(target_rtns, how="inner")
+"""
+# ==============================================================
+# Make Target Column
+# ==============================================================
+"""
 
-# Feature Selection
-TARGET_VAR_NAME = "returns"
+target_rtns = make_target_rtns(rawdata.close, binary=True)
+
+target_tpsl_out = make_target_tpsl(rawdata.close, tp=0.05, sl=-0.03)
+rawdata.close.to_clipboard()
+target_tpsl_out.to_clipboard()
+
+target_tpsl = target_tpsl_out["hitbinary"]
+
+data = fdata.join(target_rtns, how="inner").join(target_tpsl, how="inner")
+
+
+target_columns = ["returns", "hitbinary"]
+TARGET_VAR_NAME = "returns"  # hitbinary
+data["target"] = data[TARGET_VAR_NAME].astype("category")
+data.drop(target_columns, axis=1, inplace=True)
+
+data.target.value_counts(normalize=True)
+
+"""
+# ==============================================================
+# Manual Feature Selection
+# ==============================================================
+"""
 
 # Correlations
 corrma = data.corr()[[TARGET_VAR_NAME]].rename(columns={TARGET_VAR_NAME: "corr"})
@@ -140,30 +174,102 @@ featselect = sorted(
     )
 )
 
-# Machine Learning
-X = data[featselect]
-y = data[TARGET_VAR_NAME]
+"""
+# ==============================================================
+# Model Training
+# ==============================================================
+"""
 
-# Import necessary library
+# X = data[featselect]
+X = data.drop("target", axis=1)
+y = data["target"]
+
 # Define the number of splits for time series cross-validation
 n_splits = 10
 
 # Perform time series split
-tscv = TimeSeriesSplit(n_splits=n_splits)
+tscv = TimeSeriesSplit(n_splits=n_splits, gap=24 * 5)
+
+"""
+# ==============================================================
+# GridSearchCV to determine pipeline structure
+# ==============================================================
+"""
+
+scoring = {
+    "accuracy": make_scorer(accuracy_score),
+    "precision": make_scorer(precision_score, average="macro"),
+    "recall": make_scorer(recall_score, average="macro"),
+    "f1": make_scorer(f1_score, average="macro"),
+    "roc_auc": make_scorer(roc_auc_score, needs_proba=True),
+}
 
 # Define the pipeline
 pipeline = Pipeline(
     [
-        ("scaling", StandardScaler()),  # Feature scaling
-        # ("pca", PCA(n_components=5)),  # PCA for dimensionality reduction
-        # (
-        #     "interactions",
-        #     PolynomialFeatures(interaction_only=True),
-        # ),  # Feature interactions
-        (
-            "classification",
+        ("interactions", PolynomialFeatures(interaction_only=True)),
+        ("scaling", StandardScaler()),
+        ("feature_selection", None),
+        ("pca", PCA()),
+        ("classification", LogisticRegression(max_iter=1000)),
+    ]
+)
+
+param_grid = [
+    {
+        "interactions": [PolynomialFeatures(interaction_only=True), None],
+        "feature_selection": [
+            SelectFromModel(LGBMClassifier(verbose=-100)),
+            None,
+        ],
+        "pca": [PCA(n_components=20), None],
+        "classification": [
             LogisticRegression(max_iter=1000),
-        ),  # Classification model
+            LGBMClassifier(verbose=-100),
+        ],
+    }
+]
+
+# Create a GridSearchCV object
+pipeline_clone = clone(pipeline)
+
+grid_search = GridSearchCV(
+    estimator=pipeline_clone,
+    param_grid=param_grid,
+    cv=tscv,
+    scoring="roc_auc",
+    verbose=-100,
+)
+
+grid_search = RandomizedSearchCV(
+    estimator=pipeline_clone,
+    param_distributions=param_grid,
+    n_iter=20,
+    cv=tscv,
+    scoring="roc_auc",
+    verbose=-100,
+)
+
+
+# Fit the GridSearchCV object to the data
+grid_search.fit(X, y)
+print(grid_search.best_params_)
+pd.DataFrame(grid_search.cv_results_).to_clipboard()
+
+"""
+# ==============================================================
+# Manual Training Loop
+# ==============================================================
+"""
+
+# Define the pipeline
+pipeline = Pipeline(
+    [
+        ("scaling", StandardScaler()),
+        # ("feature_selection", SelectKBest(chi2)),
+        ("interactions", PolynomialFeatures(interaction_only=True)),
+        ("pca", PCA()),
+        ("classification", LogisticRegression(max_iter=1000)),
     ]
 )
 
@@ -176,5 +282,10 @@ for train_index, test_index in tscv.split(X):
     model = pipeline_clone.fit(X_train, y_train)
     metrics.append(evaluate_model(model, X_train, y_train, X_test, y_test))
 
-resu = pd.concat(metrics, axis=0)
-resu_grouped = resu.groupby(resu.index).mean()
+resu = pd.concat(
+    [x.rename(columns=lambda x: f"{x}_{i}") for i, x in enumerate(metrics, start=1)],
+    axis=1,
+)
+rsg = pd.concat(metrics)
+resu_grouped = rsg.groupby(rsg.index).agg(["min", "mean", "std"]).loc[resu.index]
+resu_grouped.loc[:, sorted(resu_grouped.columns, key=lambda x: x[1])]
