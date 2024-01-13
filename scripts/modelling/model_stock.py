@@ -19,7 +19,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from quanttak.features import FeatureEngineer
-from quanttak.func import make_target_rtns, make_target_tpsl
+from quanttak.targets import make_target_rtns, make_target_tpsl
 
 START = "2015-01-01"
 END = "2024-01-02"

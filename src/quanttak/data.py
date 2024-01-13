@@ -10,7 +10,7 @@ from stocksymbol import StockSymbol
 
 
 def fetch_ohlcv_data(symbol: str, timeframe: str, since: str = "2023-01-01 00:00:00"):
-    datetime_obj = datetime.strptime(since, "%Y-%m-%d %H:%M:%S")
+    datetime_obj = datetime.datetime.strptime(since, "%Y-%m-%d %H:%M:%S")
     since_ms = int(datetime_obj.timestamp() * 1000)
     exchange = ccxt.binance()
 
@@ -28,6 +28,7 @@ def fetch_ohlcv_data(symbol: str, timeframe: str, since: str = "2023-01-01 00:00
         all_ohlcv_data, columns=["timestamp", "open", "high", "low", "close", "volume"]
     )
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+    df.set_index("timestamp", inplace=True)
     return df
 
 
