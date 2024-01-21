@@ -1,7 +1,7 @@
 import pandas as pd
 import ppscore as pps
 from sklearn.decomposition import PCA
-from sklearn.feature_selection import SelectFromModel
+from tqdm import tqdm
 
 pd.options.mode.chained_assignment = None  # Disable the SettingWithCopyWarning
 
@@ -22,7 +22,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 from quanttak.features import FeatureEngineer
-from quanttak.targets import make_target_rtns, make_target_tpsl
+from quanttak.targets import lookahead_downsampling, make_target_rtns, make_target_tpsl
 
 
 def evaluate_model(model, X_train, y_train, X_test, y_test):
@@ -66,6 +66,8 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     train_datadict["FP"] = train_fp
     train_datadict["FN"] = train_fn
     train_datadict["Size"] = train_tp + train_tn + train_fp + train_fn
+    train_datadict["From"] = X_train.index.min()
+    train_datadict["To"] = X_train.index.max()
 
     # Store results for test set
     test_datadict["Accuracy"] = test_accuracy
@@ -78,6 +80,8 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     test_datadict["FP"] = test_fp
     test_datadict["FN"] = test_fn
     test_datadict["Size"] = test_tp + test_tn + test_fp + test_fn
+    test_datadict["From"] = y_train.index.min()
+    test_datadict["To"] = y_train.index.max()
 
     return (
         pd.concat(
@@ -98,15 +102,17 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 # ==============================================================
 """
 
+RANDOM_SEED = 1990
 SINCE = "2022-01-01 00:00:00"
 SYMBOL = "BTC/USDT"
 TIMEFRAME = "1h"
 FILEPATH = f"data/crypto_data_{SYMBOL.lower().replace('/','')}_{TIMEFRAME.lower()}_{SINCE.replace(' ','_').replace('-','').replace(':','')}.pkl"
 
 # rawdata = fetch_ohlcv_data(symbol=SYMBOL, timeframe=TIMEFRAME, since=SINCE)
-# rawdata.to_pickle(FILEPATH)
 
+# rawdata.to_pickle(FILEPATH)
 rawdata = pd.read_pickle(FILEPATH)
+rawfeatures = rawdata.columns.tolist()
 
 # Get features
 fdata = FeatureEngineer(
@@ -124,31 +130,37 @@ fdata = FeatureEngineer(
 # ==============================================================
 """
 
-target_rtns = make_target_rtns(rawdata.close, binary=True)
+# Returns Column
+target_rtns = make_target_rtns(rawdata.close, binary=True, period=1)
 
-target_tpsl_out = make_target_tpsl(rawdata.close)
-rawdata.close.to_clipboard()
-target_tpsl_out.to_clipboard()
+# TPSL Column
+target_tpsl_out = make_target_tpsl(rawdata.close, tp=0.03, sl=-0.025)
+# rawdata.close.to_clipboard()
+# target_tpsl_out.to_clipboard()
 target_tpsl = target_tpsl_out["hit_binary"]
 
+# Merge Datasets
 data = fdata.join(target_rtns, how="inner").join(target_tpsl, how="inner")
 
-
-target_columns = ["returns", "hitbinary"]
-TARGET_VAR_NAME = "returns"  # hitbinary
+# Choose Taret
+target_columns = ["returns", "hit_binary"]
+TARGET_VAR_NAME = "hit_binary"  # "returns"
 data["target"] = data[TARGET_VAR_NAME].astype("category")
 data.drop(target_columns, axis=1, inplace=True)
 
+# Review Target
 data.target.value_counts(normalize=True)
+# data.to_pickle(FILEPATH.replace(".pkl", "_features.pkl"))
+
 
 """
 # ==============================================================
-# Manual Feature Selection
+# Feature Selection
 # ==============================================================
 """
 
 # Correlations
-corrma = data.corr()[[TARGET_VAR_NAME]].rename(columns={TARGET_VAR_NAME: "corr"})
+corrma = data.corr()[["target"]].rename(columns={"target": "corr"})
 corrma["abscorr"] = corrma["corr"].apply(abs)
 corrma = (
     corrma.loc[lambda x: x.index.str.contains(r"[A-Z]")]
@@ -159,19 +171,21 @@ corrma = (
 )
 
 # PPS Score
-data[f"{TARGET_VAR_NAME}_category"] = data[TARGET_VAR_NAME].astype("category")
-ppsdat = pps.predictors(data, f"{TARGET_VAR_NAME}_category")
-ppsdat = ppsdat.loc[lambda x: x["x"].str.contains(r"[A-Z]")]
+ppsdata_out = pps.predictors(data, "target")
+ppsdata = ppsdata_out.loc[
+    lambda x: (~x["x"].isin(rawfeatures) & (x["baseline_score"] < x["model_score"]))
+]
 
-TOP_X_FEATURES = 15
+TOP_X_FEATURES = 30
 featselect = sorted(
     list(
         set(
             corrma.head(TOP_X_FEATURES)["x"].tolist()
-            + ppsdat.head(TOP_X_FEATURES)["x"].tolist()
+            + ppsdata.head(TOP_X_FEATURES)["x"].tolist()
         )
     )
 )
+len(featselect)
 
 """
 # ==============================================================
@@ -179,15 +193,16 @@ featselect = sorted(
 # ==============================================================
 """
 
-# X = data[featselect]
-X = data.drop("target", axis=1)
+X = data[featselect]
+# X = data.drop("target", axis=1)
+
 y = data["target"]
 
 # Define the number of splits for time series cross-validation
-n_splits = 10
+n_splits = 5
 
 # Perform time series split
-tscv = TimeSeriesSplit(n_splits=n_splits, gap=24 * 5)
+tscv = TimeSeriesSplit(n_splits=n_splits)
 
 """
 # ==============================================================
@@ -208,23 +223,30 @@ pipeline = Pipeline(
     [
         ("interactions", PolynomialFeatures(interaction_only=True)),
         ("scaling", StandardScaler()),
-        ("feature_selection", None),
-        ("pca", PCA()),
+        ("pca", PCA(n_components=20)),
+        # ("feature_selection", SelectFromModel(LogisticRegression())),
         ("classification", LogisticRegression(max_iter=1000)),
     ]
 )
 
+XX = pipeline.fit_transform(X)
+
+X.shape
+XX.shape
+pipeline.named_steps["interactions"].n_output_features_
+pipeline.named_steps["pca"].explained_variance_ratio_.sum()
+
 param_grid = [
     {
         "interactions": [PolynomialFeatures(interaction_only=True), None],
-        "feature_selection": [
-            SelectFromModel(LGBMClassifier(verbose=-100)),
-            None,
-        ],
+        # "feature_selection": [
+        #     SelectFromModel(LGBMClassifier()),
+        #     None,
+        # ],
         "pca": [PCA(n_components=20), None],
         "classification": [
             LogisticRegression(max_iter=1000),
-            LGBMClassifier(verbose=-100),
+            # LGBMClassifier(),
         ],
     }
 ]
@@ -237,7 +259,7 @@ grid_search = GridSearchCV(
     param_grid=param_grid,
     cv=tscv,
     scoring="roc_auc",
-    verbose=-100,
+    verbose=0,
 )
 
 grid_search = RandomizedSearchCV(
@@ -246,7 +268,7 @@ grid_search = RandomizedSearchCV(
     n_iter=20,
     cv=tscv,
     scoring="roc_auc",
-    verbose=-100,
+    verbose=0,
 )
 
 
@@ -264,36 +286,44 @@ pd.DataFrame(grid_search.cv_results_).to_clipboard()
 # Define the pipeline
 pipeline = Pipeline(
     [
-        ("scaling", StandardScaler()),
-        # ("feature_selection", SelectKBest(chi2)),
         ("interactions", PolynomialFeatures(interaction_only=True)),
-        ("pca", PCA()),
-        ("classification", LogisticRegression(max_iter=1000)),
+        ("scaling", StandardScaler()),
+        ("pca", PCA(n_components=20)),
+        # ("feature_selection", SelectFromModel(LogisticRegression())),
+        # ("classification", LogisticRegression(max_iter=1000)),
+        ("classification", LGBMClassifier(verbosity=0)),
     ]
 )
 
 # Iterate over the splits
 metrics = []
-for train_index, test_index in tscv.split(X):
+for train_index, test_index in tqdm(tscv.split(X)):
     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    X_train_ld, y_train_ld = lookahead_downsampling(
+        x_set=X_train, y_set=y_train, steer=target_tpsl_out, fraction_to_sample=0.65
+    )
     pipeline_clone = clone(pipeline)
-    model = pipeline_clone.fit(X_train, y_train)
-    metrics.append(evaluate_model(model, X_train, y_train, X_test, y_test))
+    model = pipeline_clone.fit(X_train_ld, y_train_ld)
+    metrics.append(
+        evaluate_model(model, X_train_ld, y_train_ld, X_test, y_test)
+    )  # ! X_train_ld & y_train_ld or X_train & y_train
 
-resu = pd.concat(
+# Results splits
+results_by_split = pd.concat(
     [x.rename(columns=lambda x: f"{x}_{i}") for i, x in enumerate(metrics, start=1)],
     axis=1,
-)
-rsg = pd.concat(metrics)
-resu_grouped = rsg.groupby(rsg.index).agg(["min", "mean", "std"]).loc[resu.index]
-resu_grouped.loc[:, sorted(resu_grouped.columns, key=lambda x: x[1])]
+).T
 
-# TODO
-# Introduce a function to adjust train & test sets
-# 1. Need to account for look-ahead bias
-# That is exclude train observations whose target is based on test info
-# 2. Need to establish iid observations
-# That is exclude multiple train & test observations which may link back to same hit_date info
-# You may determine amount of observation in each set affected from the same hit_date
-# Impose a distribution on the observations and sample based on that
+# Aggregated results
+metrics = ["Accuracy", "Precision", "Recall", "F1", "ROC"]
+rsg = pd.concat(metrics).rename_axis("metrics").reset_index()
+results_aggregated = (
+    rsg.loc[lambda x: x["metrics"].isin(metrics)]
+    .groupby("metrics")
+    .agg(["min", "mean", "std"])
+)
+results_aggregated = results_aggregated.loc[
+    metrics, sorted(results_aggregated.columns, key=lambda x: x[1])
+]
+results_aggregated

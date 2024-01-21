@@ -6,9 +6,11 @@ from sklearn.metrics import mutual_info_score
 
 
 class BinaryContinuousAnalyzer:
-    def __init__(self, dataframe, target):
+    def __init__(self, dataframe: pd.DataFrame, target: str):
         self.dataframe = dataframe
         self.target = target
+        if self.target not in self.dataframe.columns:
+            raise ValueError(f"Target '{self.target}' not in dataframe columns.")
 
     def point_biserial_correlation(self):
         correlations = {}
@@ -85,17 +87,14 @@ class BinaryContinuousAnalyzer:
         return pd.DataFrame(scores, index=["ppscore"])
 
     def get_results_dataframe(self):
-        results = pd.concat(
-            [
-                self.point_biserial_correlation(),
-                self.mann_whitney_test(),
-                self.spearman_rank_correlation(),
-                self.biserial_correlation(),
-                self.mutual_information(),
-                self.anova_test(),
-                self.ppscore(),
-            ]
-        )
+        pbs = self.point_biserial_correlation()
+        mwt = self.mann_whitney_test()
+        src = self.spearman_rank_correlation()
+        bir = self.biserial_correlation()
+        mui = self.mutual_information()
+        anv = self.anova_test()
+        pps = self.ppscore()
+        results = pd.concat([pbs, mwt, src, bir, mui, anv, pps])
         return results
 
     def select_top_features(self, top_n):
@@ -123,3 +122,39 @@ class BinaryContinuousAnalyzer:
         # Average ranks across all methods
         final_rank = ranks.mean(axis=1).sort_values()
         return final_rank
+
+
+datapath = "data/crypto_data_btcusdt_1h_20220101_000000_features.pkl"
+td = pd.read_pickle(datapath)
+
+bca = BinaryContinuousAnalyzer(td, "target")
+
+pbs = bca.point_biserial_correlation()
+pps = bca.ppscore()
+
+bca.get_results_dataframe()
+
+# # Correlations
+# corrma = data.corr()[[TARGET_VAR_NAME]].rename(columns={TARGET_VAR_NAME: "corr"})
+# corrma["abscorr"] = corrma["corr"].apply(abs)
+# corrma = (
+#     corrma.loc[lambda x: x.index.str.contains(r"[A-Z]")]
+#     .dropna()
+#     .sort_values(by=["abscorr"], ascending=False)
+#     .rename_axis("x")
+#     .reset_index()
+# )
+
+# # PPS Score
+# ppsdat = pps.predictors(td, "target")
+# ppsdat = ppsdat.loc[lambda x: x["x"].str.contains(r"[A-Z]")]
+
+# TOP_X_FEATURES = 15
+# featselect = sorted(
+#     list(
+#         set(
+#             corrma.head(TOP_X_FEATURES)["x"].tolist()
+#             + ppsdat.head(TOP_X_FEATURES)["x"].tolist()
+#         )
+#     )
+# )
