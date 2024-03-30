@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from quanttak.func import get_fundamentals_yf, get_symbols
+from quanttak.data import get_fundamentals_yf, get_symbols
 
 """
 # ==============================================================
@@ -158,7 +158,7 @@ if __name__ == "__main__":
     # Get list of symbols
     # markets = get_markets()
     # stocksymbols = get_symbols(market="GR")
-    stocksymbols = get_symbols(index=ROOTSYMBOL)
+    stocksymbols = get_symbols(market=ROOTSYMBOL)
     print(f"Symbols for {ROOTSYMBOL}: {len(stocksymbols)}")
 
     # Sample symbols
